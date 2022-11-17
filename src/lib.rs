@@ -3,4 +3,4 @@
 #![no_std]
 
 mod kalman;
-pub use kalman::Kalman1D;
+pub use kalman::*;
