@@ -3,12 +3,13 @@ use plotters::prelude::*;
 use ukalman::Kalman1D;
 
 fn main() {
-    let mut f = std::fs::File::open("test_assets/data.txt").unwrap();
+    println!("Reading data...");
+    let mut f = std::fs::File::open("test_assets/motor_on_progressive.txt").unwrap();
     let mut str = String::new();
     f.read_to_string(&mut str).unwrap();
-    let data = str.split(", ").flat_map(|s| s.parse::<u16>());
 
-    let root_drawing_area = BitMapBackend::new("images/2.4.png", (600, 400))
+    println!("Creating plot...");
+    let root_drawing_area = BitMapBackend::new("/home/andy/CLionProjects/ukalman/2.4.png", (1000, 1000))
         .into_drawing_area();
 
     root_drawing_area.fill(&WHITE).unwrap();
@@ -17,30 +18,26 @@ fn main() {
         .caption("Filtering noisy signal", ("Arial", 30))
         .set_label_area_size(LabelAreaPosition::Left, 40)
         .set_label_area_size(LabelAreaPosition::Bottom, 40)
-        .build_cartesian_2d(0..10000isize, 0..3000isize)
+        .build_cartesian_2d(0..30000isize, 0..3000isize)
         .unwrap();
 
     ctx.configure_mesh().draw().unwrap();
 
-    ctx.draw_series(LineSeries::new(data.scan(0isize, |x, y| {
+    println!("starting drawing...");
+
+    ctx.draw_series(LineSeries::new(str.lines().flat_map(|s| s.parse()).scan(0isize, |x, y: isize| {
         *x += 32;
         Some((*x, y as isize))
-    }), &BLUE)).unwrap()
-        .label("Raw signal")
-        .legend(|(x, y)| PathElement::new(vec![(x, y), (x + 20, y)], &BLUE));
+    }), &BLUE)).unwrap();
+
+    println!("Done drawing normal...");
 
     let mut kal = Kalman1D::new(0.0, 10.0);
 
-    ctx.draw_series(LineSeries::new(str.split(", ").flat_map(|s| s.parse::<u16>()).scan(0isize, |x, y| {
+    ctx.draw_series(LineSeries::new(str.lines().flat_map(|s| s.parse()).scan(0isize, |x, y: isize| {
         *x += 32;
-        Some((*x, kal.filter(y as f32, 5.0, |x| x, |s| s + 0.0001) as isize))
-    }), &RED)).unwrap()
-        .label("Kalman filtered")
-        .legend(|(x, y)| PathElement::new(vec![(x, y), (x + 20, y)], &RED));
+        Some((*x, kal.filter(y as f32, 0.006, |x| x, |s| s + 0.0001) as isize))
+    }), &RED)).unwrap();
 
-    ctx.configure_series_labels()
-        .border_style(&BLACK)
-        .background_style(&WHITE.mix(0.8))
-        .draw()
-        .unwrap();
+    println!("Done drawing kalman...");
 }
