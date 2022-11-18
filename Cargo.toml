@@ -6,6 +6,8 @@ license = "MIT"
 edition = "2021"
 keywords = ["Kalman", "Filter", "no-std"]
 
+description = "Super tiny zero allocation filters for embedded"
+
 [dependencies]
 
 [dev-dependencies]
