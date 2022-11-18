@@ -1,7 +1,10 @@
 [package]
 name = "ukalman"
 version = "0.1.0"
+authors = ["Andrew Ealovega <Andrew@Ealovega>"]
+license = "MIT"
 edition = "2021"
+keywords = ["Kalman", "Filter", "no-std"]
 
 [dependencies]
 
